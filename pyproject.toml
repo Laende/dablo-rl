@@ -1,0 +1,84 @@
+[project]
+name = "dablo-rl"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "gymnasium>=1.2.0",
+    "hypothesis>=6.137.1",
+    "matplotlib>=3.10.5",
+    "numpy>=2.3.2",
+    "pydantic>=2.11.7",
+    "pydantic-settings>=2.10.1",
+    "pytest>=8.4.1",
+    "sb3-contrib>=2.7.0",
+    "stable-baselines3[extra]>=2.7.0",
+    "torch>=2.8.0",
+    "torchvision>=0.23.0",
+]
+
+[tool.uv.sources]
+torch = [
+  { index = "pytorch-cu128", marker = "sys_platform == 'linux' or sys_platform == 'win32'" },
+]
+torchvision = [
+  { index = "pytorch-cu128", marker = "sys_platform == 'linux' or sys_platform == 'win32'" },
+]
+
+[[tool.uv.index]]
+name = "pytorch-cu128"
+url = "https://download.pytorch.org/whl/cu128"
+explicit = true
+
+[dependency-groups]
+dev = [
+    "pytest>=8.4.1",
+    "ruff>=0.12.8",
+]
+
+# Linter configuration (moved from top-level to lint section)
+[tool.ruff.lint]
+# Enable import sorting (replaces isort)
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # Pyflakes
+    "I",    # isort (import sorting)
+    "B",    # flake8-bugbear
+    "C4",   # flake8-comprehensions
+    "UP",   # pyupgrade
+]
+
+# Ignore certain rules
+ignore = [
+    "E501",  # Line too long (handled by formatter)
+    "B008",  # Do not perform function calls in argument defaults
+]
+
+# Configure import sorting (isort replacement)
+[tool.ruff.lint.isort]
+# Known first party modules (your own code)
+known-first-party = ["dablo", "tests", "training"]
+
+# Import order: stdlib, third-party, first-party, local
+section-order = ["future", "standard-library", "third-party", "first-party", "local-folder"]
+
+# Split imports onto separate lines when needed
+force-single-line = false
+force-sort-within-sections = true
+
+# Add a blank line between import sections
+split-on-trailing-comma = true
+lines-after-imports = 2
+
+# Configure formatter
+[tool.ruff.format]
+# Use double quotes for strings
+quote-style = "double"
+
+# Skip magic trailing comma
+skip-magic-trailing-comma = false
+
+# Prefer line breaks after opening brackets
+line-ending = "auto"
