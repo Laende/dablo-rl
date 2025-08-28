@@ -8,6 +8,8 @@ A Python implementation of the traditional Sami board game **Dablo** with intera
 
 Dablo is a family of traditional Sami board games that have been played throughout Sápmi. This implementation follows **sørsamisk dablo** (Southern Sami dablo), a "war dablo" variant documented by Anders and Hanna Nilsson from Frostviken in the early 1900s.
 
+*Source: [Reaidu - UiT The Arctic University of Norway](https://result.uit.no/reaidu/ressurser/aktiviteter/dablo/)*
+
 ### Piece Types
 - **Warriors** (dåarohke): Move forward only, capture other warriors
 - **Princes** (gånkan elkie): Move forward only, capture warriors and princes  
