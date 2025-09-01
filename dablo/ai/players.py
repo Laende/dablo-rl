@@ -113,7 +113,7 @@ class SmartNPCPlayer(NPCPlayer):
 
         # Add scores from various strategic heuristics
         score += (
-            self._evaluate_king_safety(game, move, board_after_move)
+            self._evaluate_king_safety(game, board_after_move)
             * self.settings.king_safety
         )
         score += (
@@ -130,9 +130,7 @@ class SmartNPCPlayer(NPCPlayer):
 
         return score
 
-    def _evaluate_king_safety(
-        self, game: DabloGame, move: Move, board_after_move: dict
-    ) -> float:
+    def _evaluate_king_safety(self, game: DabloGame, board_after_move: dict) -> float:
         """Evaluate how this move affects king safety"""
         # Find our king position
         king_type = P1_KING if self.player_id == Player.P1 else P2_KING

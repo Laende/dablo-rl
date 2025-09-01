@@ -272,15 +272,15 @@ class InteractiveDabloGame:
         )
 
         if self.game.capture_sequence:
-            status_text += "\n🔗 Chain capture in progress!"
+            status_text += "\nChain capture in progress!"
 
         if self.selected_piece:
             piece = self.game.board_state[self.selected_piece]
-            status_text += f"\n📍 Selected: {piece.name}"
+            status_text += f"\nSelected: {piece.name}"
 
         if self.game.game_over:
             winner_text = self.game.winner.name if self.game.winner else "Draw"
-            status_text += f"\n🏆 Game Over - {winner_text} wins!"
+            status_text += f"\nGame Over - {winner_text} wins!"
 
         # Position text in top-right corner to avoid blocking game
         self.ax.text(
@@ -311,9 +311,9 @@ class InteractiveDabloGame:
         """Handle game over state"""
         print("\n" + "=" * 50)
         if self.game.winner:
-            print(f"🏆 Game Over! {self.game.winner.name} wins!")
+            print(f"Game Over! {self.game.winner.name} wins!")
         else:
-            print("🤝 Game Over! It's a draw!")
+            print("Game Over! It's a draw!")
         print(f"Total moves: {self.game.move_count}")
         print("=" * 50)
 
@@ -323,7 +323,7 @@ class InteractiveDabloGame:
         self.selected_piece = None
         self.valid_moves_for_piece = []
         self.game_history = []
-        print("🔄 Game restarted!")
+        print("Game restarted!")
         self._update_display()
 
     def _undo_move(self):
@@ -331,7 +331,7 @@ class InteractiveDabloGame:
         if self.game_history:
             self._load_game_state(self.game_history.pop())
             self._deselect_piece()
-            print("↶ Move undone!")
+            print("Move undone!")
         else:
             print("Nothing to undo!")
 

@@ -9,7 +9,6 @@ __version__ = "0.1.0"
 __author__ = "Gieril Ánde E. Lindi"
 
 from .core.game import DabloGame
-from .env.environment import DabloEnv
 
 
-__all__ = ["DabloGame", "DabloEnv"]
+__all__ = ["DabloGame"]
