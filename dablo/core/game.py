@@ -42,6 +42,8 @@ class DabloGame:
         self.p1_pieces: set[tuple[float, float]] = set()
         self.p2_pieces: set[tuple[float, float]] = set()
 
+        self.board_state = dict.fromkeys(self.nodes, PieceType.EMPTY)
+
         if not initial_state == "empty":
             self._setup_initial_pieces()
 
@@ -92,8 +94,6 @@ class DabloGame:
 
     def _setup_initial_pieces(self):
         """Set up the initial game position from the config."""
-        # Initialize empty board
-        self.board_state = dict.fromkeys(self.nodes, PieceType.EMPTY)
         self.p1_pieces.clear()
         self.p2_pieces.clear()
 
@@ -258,6 +258,11 @@ class DabloGame:
         if self.game_over:
             return False, {"error": "Game is over"}
 
+        # Validate that this is a legal move
+        valid_moves = self.get_all_valid_moves()
+        if move not in valid_moves:
+            return False, {"error": "Invalid move", "move": move}
+
         # Store move info for rewards
         move_info = {"is_capture": False, "chain_capture_available": False}
 
@@ -293,11 +298,11 @@ class DabloGame:
         self.capture_sequence = False
         self.capturing_piece = None
         self.current_player = self.current_player.opponent()
-        self._check_game_state()
+        self._end_turn_and_check_for_winner()
 
         return True, move_info
 
-    def _check_game_state(self):
+    def _end_turn_and_check_for_winner(self):
         """Check if game has ended and determine winner"""
 
         # Generate the list of moves ONCE.
@@ -305,7 +310,6 @@ class DabloGame:
 
         p1_king_pos = self.get_king_position(Player.P1)
         p2_king_pos = self.get_king_position(Player.P2)
-
         winner, reason = GameRules.check_win_condition(
             p1_pieces_count=len(self.p1_pieces),
             p2_pieces_count=len(self.p2_pieces),

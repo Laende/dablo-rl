@@ -263,13 +263,13 @@ def demo_visualization():
     game = DabloGame()
 
     # Show initial position
-    quick_visualize(game, title="Initial Position")
+    quick_visualize(game)
 
     # Make a few moves and show
     moves = game.get_all_valid_moves()
     if moves:
         game.make_move(moves[0])
-        quick_visualize(game, title="After First Move")
+        quick_visualize(game)
 
 
 if __name__ == "__main__":

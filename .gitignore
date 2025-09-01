@@ -52,9 +52,6 @@ __pypackages__/
 .env
 .envrc
 .venv
-env/
-venv/
-ENV/
 env.bak/
 venv.bak/
 
