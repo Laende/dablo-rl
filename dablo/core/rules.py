@@ -6,10 +6,12 @@ as documented by Anders and Hanna Nilsson from Frostviken.
 """
 
 from enum import Enum
+from typing import TYPE_CHECKING
 
-from pydantic import BaseModel, Field, computed_field
 
-from .pieces import PieceType, can_capture
+if TYPE_CHECKING:
+    from dablo.core.game import DabloGame
+
 from .player import Player
 
 
@@ -32,148 +34,53 @@ WIN_DESCRIPTIONS: dict[WinReason, str] = {
 }
 
 
-class Move(BaseModel, frozen=True):
-    """
-    Represents a move in sørsamisk dablo with validation
+class Move:
+    """A lightweight representation of a move."""
 
-    Moves can be either regular moves (to empty space) or captures (jumping over opponent).
-    Chain captures are handled by making multiple consecutive Move objects.
-    """
+    __slots__ = ("from_pos", "to_pos", "capture_pos")
 
-    from_pos: tuple[float, float] = Field(description="Starting position (row, col)")
-    to_pos: tuple[float, float] = Field(description="Destination position (row, col)")
-    capture_pos: tuple[float, float] | None = Field(
-        default=None, description="Position of captured piece (if any)"
-    )
+    def __init__(
+        self,
+        from_pos: tuple[float, float],
+        to_pos: tuple[float, float],
+        capture_pos: tuple[float, float] | None = None,
+    ):
+        self.from_pos = from_pos
+        self.to_pos = to_pos
+        self.capture_pos = capture_pos
 
-    @computed_field
     @property
     def is_capture(self) -> bool:
-        """Check if this move represents a capture"""
+        """Check if this move represents a capture."""
         return self.capture_pos is not None
 
-    @computed_field
-    @property
-    def distance(self) -> float:
-        """Calculate the distance of this move"""
-        row_diff = self.to_pos[0] - self.from_pos[0]
-        col_diff = self.to_pos[1] - self.from_pos[1]
-        return (row_diff**2 + col_diff**2) ** 0.5
+    def __repr__(self) -> str:
+        """Provides a representation of the move."""
+        return (
+            f"Move(from={self.from_pos}, to={self.to_pos}, capture={self.capture_pos})"
+        )
 
-    def __str__(self) -> str:
-        """Provides a human-readable string representation of the move"""
-        if self.is_capture:
-            return f"{self.from_pos} → {self.to_pos} (captures {self.capture_pos})"
-        return f"{self.from_pos} → {self.to_pos}"
+    def __eq__(self, other) -> bool:
+        """Check equality between moves."""
+        if not isinstance(other, Move):
+            return False
+        return (
+            self.from_pos == other.from_pos
+            and self.to_pos == other.to_pos
+            and self.capture_pos == other.capture_pos
+        )
 
-
-class MovementValidator:
-    """Validates moves according to Dablo rules"""
-
-    @staticmethod
-    def is_forward_move(
-        from_pos: tuple[float, float], to_pos: tuple[float, float], is_player1: bool
-    ) -> bool:
-        """Check if a move is forward based on player direction."""
-        row_diff = to_pos[0] - from_pos[0]
-        return row_diff < 0 if is_player1 else row_diff > 0
-
-    @staticmethod
-    def is_adjacent(
-        pos1: tuple[float, float],
-        pos2: tuple[float, float],
-        adjacency_graph: dict[tuple[float, float], list[tuple[float, float]]],
-    ) -> bool:
-        """Check if two tuple positions are adjacent using the board graph."""
-        return pos2 in adjacency_graph.get(pos1, [])
-
-    @staticmethod
-    def calculate_capture_landing(
-        from_pos: tuple[float, float], capture_pos: tuple[float, float]
-    ) -> tuple[float, float]:
-        """Calculate the landing tuple position after a capture."""
-
-        row_diff = capture_pos[0] - from_pos[0]
-        col_diff = capture_pos[1] - from_pos[1]
-
-        if (abs(row_diff), abs(col_diff)) in {(0.5, 1.5), (1.5, 0.5)}:
-            landing_r = capture_pos[0] + (0.5 if row_diff > 0 else -0.5)
-            landing_c = capture_pos[1] + (0.5 if col_diff > 0 else -0.5)
-        else:
-            landing_r = capture_pos[0] + row_diff
-            landing_c = capture_pos[1] + col_diff
-
-        return (landing_r, landing_c)
+    def __hash__(self) -> int:
+        """Hash function for Move objects."""
+        return hash((self.from_pos, self.to_pos, self.capture_pos))
 
 
 class GameRules:
     """Encapsulates all Dablo game rules using tuple coordinates."""
 
     @staticmethod
-    def is_valid_regular_move(
-        from_pos: tuple[float, float],
-        to_pos: tuple[float, float],
-        piece: PieceType,
-        board_state: dict[tuple[float, float], PieceType],
-        adjacency_graph: dict[tuple[float, float], list[tuple[float, float]]],
-    ) -> bool:
-        """Validate a regular (non-capture) move."""
-        # Target must be empty
-        if board_state.get(to_pos) != PieceType.EMPTY:
-            return False
-
-        # Must be an adjacent, forward move
-        if not MovementValidator.is_adjacent(from_pos, to_pos, adjacency_graph):
-            return False
-
-        is_player1 = piece > 0
-        if not MovementValidator.is_forward_move(from_pos, to_pos, is_player1):
-            return False
-
-        return True
-
-    @staticmethod
-    def is_valid_capture_move(
-        from_pos: tuple[float, float],
-        capture_pos: tuple[float, float],
-        landing_pos: tuple[float, float],
-        attacker: PieceType,
-        target: PieceType,
-        board_state: dict[tuple[float, float], PieceType],
-        adjacency_graph: dict[tuple[float, float], list[tuple[float, float]]],
-    ) -> bool:
-        """Validate a capture move."""
-        # Landing position must exist and be empty
-        if board_state.get(landing_pos) != PieceType.EMPTY:
-            return False
-
-        # Must be able to capture the target piece
-        if not can_capture(attacker, target):
-            return False
-
-        # Capture position must be adjacent
-        if not MovementValidator.is_adjacent(from_pos, capture_pos, adjacency_graph):
-            return False
-
-        # Landing position must be arithmetically correct
-        expected_landing = MovementValidator.calculate_capture_landing(
-            from_pos, capture_pos
-        )
-        if landing_pos != expected_landing:
-            return False
-
-        return True
-
-    @staticmethod
     def check_win_condition(
-        p1_pieces_count: int,
-        p2_pieces_count: int,
-        p1_king_exists: bool,
-        p2_king_exists: bool,
-        move_count: int,
-        move_limit: int,
-        has_valid_moves: bool,
-        current_player: Player,
+        game: "DabloGame",
     ) -> tuple[Player | None, WinReason | None]:
         """
         Check if the game has ended according to sørsamisk dablo rules
@@ -189,27 +96,31 @@ class GameRules:
         """
 
         # 1. King capture (Highest priority)
-        if not p1_king_exists:
+        if not game.piece_tracker.get_king_position(Player.P1):
             return Player.P2, WinReason.KING_CAPTURE
-        if not p2_king_exists:
+        if not game.piece_tracker.get_king_position(Player.P2):
             return Player.P1, WinReason.KING_CAPTURE
 
-        # 2. King vs. King Draw (before checking for a lone king win)
-        if p1_pieces_count == 1 and p2_pieces_count == 1:
-            return None, WinReason.KINGS_ONLY_DRAW  # Draw
+        # Get piece counts
+        p1_count = len(game.p1_pieces)
+        p2_count = len(game.p2_pieces)
+
+        # 2. King vs. King Draw
+        if p1_count == 1 and p2_count == 1:
+            return None, WinReason.KINGS_ONLY_DRAW
 
         # 3. Lone King rule - opponent reduced to only their king
-        if p1_pieces_count == 1 and p2_pieces_count > 1:
+        if p1_count == 1 and p2_count > 1:
             return Player.P2, WinReason.LONE_KING
-        if p2_pieces_count == 1 and p1_pieces_count > 1:
+        if p2_count == 1 and p1_count > 1:
             return Player.P1, WinReason.LONE_KING
 
         # 4. Move limit draw
-        if move_count >= move_limit:
+        if game.move_count >= game.config.move_limit:
             return None, WinReason.MOVE_LIMIT  # Draw
 
         # 5. Stalemate (No legal moves)
-        if not has_valid_moves:
-            return current_player.opponent(), WinReason.STALEMATE
+        if not game.has_any_valid_move():
+            return game.current_player.opponent(), WinReason.STALEMATE
 
         return None, None

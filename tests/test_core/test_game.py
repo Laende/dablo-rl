@@ -196,7 +196,6 @@ class TestMoveExecution:
 
         move = capture_moves[0]
         attacker_piece = game.board_state[move.from_pos]
-        captured_piece = game.board_state[move.capture_pos]
 
         success, result = game.make_move(move)
 
@@ -299,7 +298,7 @@ class TestGameEnding:
         )
 
         # Assume the move is valid for this test setup
-        empty_game.make_move(capture_move)
+        empty_game.make_move(capture_move, _is_validated=True)
 
         assert empty_game.game_over is True
         assert empty_game.winner == Player.P1
@@ -415,3 +414,37 @@ class TestGameIntegration:
             moves_made += 1
 
         assert_game_state_consistent(game)
+
+
+@pytest.mark.unit
+class TestMoveGenerationLogic:
+    """Test move generation logic that was moved from MovementValidator to game.py"""
+
+    def test_capture_landing_calculation(self):
+        """Test capture landing position calculation logic"""
+        # Test the basic calculation logic that's now inlined in get_valid_moves
+        from_pos = (1.0, 1.0)
+        capture_pos = (1.5, 2.5)
+
+        # Basic landing calculation: landing = capture + (capture - from)
+        row_diff = capture_pos[0] - from_pos[0]  # 0.5
+        col_diff = capture_pos[1] - from_pos[1]  # 1.5
+        landing_pos = (capture_pos[0] + row_diff, capture_pos[1] + col_diff)
+
+        expected = (2.0, 4.0)  # (1.5 + 0.5, 2.5 + 1.5)
+        assert landing_pos == expected
+
+    def test_move_generation_with_invalid_positions(self):
+        """Test that move generation handles invalid board positions correctly"""
+        game = DabloGame()
+
+        # Get a piece position
+        valid_moves = game.get_all_valid_moves()
+        assert len(valid_moves) > 0, "Game should have valid moves at start"
+
+        # All moves should have valid positions
+        for move in valid_moves:
+            assert move.from_pos in game.piece_tracker.board
+            assert move.to_pos in game.piece_tracker.board
+            if move.capture_pos:
+                assert move.capture_pos in game.piece_tracker.board

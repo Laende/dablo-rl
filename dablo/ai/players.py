@@ -317,7 +317,7 @@ class SmartNPCPlayer(NPCPlayer):
         temp_game.board_state = board_state.copy()
         # If a player is specified, set them as the current player. Otherwise, use the original.
         temp_game.current_player = (
-            player_to_move if player_to_move is not None else self.player_id
+            player_to_move if player_to_move is not None else Player(self.player_id)
         )
         return temp_game
 

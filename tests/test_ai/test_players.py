@@ -195,7 +195,7 @@ class TestNPCFactory:
         npc_mixed = create_npc_player(Player.P1, "Smart")
 
         # All should create SmartNPCPlayer
-        assert type(npc_lower) == type(npc_upper) == type(npc_mixed)
+        assert type(npc_lower) is type(npc_upper) is type(npc_mixed)
         assert isinstance(npc_lower, SmartNPCPlayer)
 
     def test_create_npc_player_unknown_type(self):
