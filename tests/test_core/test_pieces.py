@@ -249,5 +249,5 @@ class TestPieceConstants:
         """Test that all ranks have base values"""
         for rank in range(4):  # 0 (empty) through 3 (king)
             assert rank in BASE_PIECE_VALUES
-            assert isinstance(BASE_PIECE_VALUES[rank], (int, float))
+            assert isinstance(BASE_PIECE_VALUES[rank], int | float)
             assert BASE_PIECE_VALUES[rank] >= 0

@@ -203,5 +203,5 @@ class TestNPCConfigIntegration:
 
                 # Should have expected attributes for difficulty settings
                 if hasattr(settings, "randomness"):
-                    assert isinstance(settings.randomness, (int, float))
+                    assert isinstance(settings.randomness, int | float)
                     assert 0.0 <= settings.randomness <= 1.0
