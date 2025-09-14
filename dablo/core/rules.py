@@ -54,6 +54,27 @@ class Move:
         """Check if this move represents a capture."""
         return self.capture_pos is not None
 
+    def to_dict(self) -> dict:
+        """Convert move to dictionary for serialization."""
+        result = {
+            "from_pos": {"r": self.from_pos[0], "c": self.from_pos[1]},
+            "to_pos": {"r": self.to_pos[0], "c": self.to_pos[1]},
+            "is_capture": self.is_capture,
+        }
+        if self.capture_pos:
+            result["capture_pos"] = {"r": self.capture_pos[0], "c": self.capture_pos[1]}
+        return result
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "Move":
+        """Create move from dictionary."""
+        from_pos = (data["from_pos"]["r"], data["from_pos"]["c"])
+        to_pos = (data["to_pos"]["r"], data["to_pos"]["c"])
+        capture_pos = None
+        if "capture_pos" in data and data["capture_pos"]:
+            capture_pos = (data["capture_pos"]["r"], data["capture_pos"]["c"])
+        return cls(from_pos=from_pos, to_pos=to_pos, capture_pos=capture_pos)
+
     def __repr__(self) -> str:
         """Provides a representation of the move."""
         return (
