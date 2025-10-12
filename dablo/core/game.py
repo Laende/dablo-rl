@@ -415,6 +415,89 @@ class DabloGame:
         # If we get here, no pieces have valid moves
         return False, {"error": "No valid moves"}
 
+    def to_dict(self) -> dict[str, Any]:
+        """Convert game state to dictionary for serialization."""
+        # Serialize board state (only non-empty positions)
+        board_state = {}
+        for pos, piece in self.board_state.items():
+            if piece != PieceType.EMPTY:
+                key = f"{pos[0]},{pos[1]}"
+                board_state[key] = piece.value
+                
+        # The capturing_piece is a tuple (r, c), which is JSON-compatible as a list [r, c]
+        capturing_piece_data = list(self.capturing_piece) if self.capturing_piece else None
+
+        return {
+            "config": {
+                "board_rows": self.config.board_rows,
+                "board_cols": self.config.board_cols,
+                "move_limit": self.config.move_limit,
+                # Note: Add any other essential config values here
+            },
+            "state": {
+                "current_player": self.current_player.value,
+                "board_state": board_state,
+                "move_count": self.move_count,
+                "game_over": self.game_over,
+                "winner": self.winner.value if self.winner else None,
+                "win_reason": self.win_reason,
+                "capture_sequence": self.capture_sequence,
+                "capturing_piece": capturing_piece_data,
+            }
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> "DabloGame":
+        """Create a game instance from a dictionary."""
+        # 1. Recreate the configuration from the serialized data
+        config_data = data.get("config", {})
+
+        # Create a default config to get proper default values
+        default_config = DabloConfig()
+        config = DabloConfig(
+            board_rows=config_data.get("board_rows", default_config.board_rows),
+            board_cols=config_data.get("board_cols", default_config.board_cols),
+            move_limit=config_data.get("move_limit", default_config.move_limit),
+        )
+
+        # 2. Create the game instance with the correct config
+        game = cls(config=config, initial_state="empty")
+
+        # 3. Restore the game state
+        state_data = data.get("state", {})
+        
+        # Restore board state
+        board_positions = {}
+        if "board_state" in state_data:
+            for pos_str, piece_value in state_data["board_state"].items():
+                try:
+                    r_str, c_str = pos_str.split(",")
+                    pos = (float(r_str), float(c_str))
+                    board_positions[pos] = PieceType(piece_value)
+                except (ValueError, KeyError) as e:
+                    # Handle potential malformed data gracefully
+                    print(f"Warning: Could not parse board position '{pos_str}': {e}")
+        
+        if board_positions:
+            game.setup_custom_position(board_positions)
+
+        # Restore other game attributes
+        game.current_player = Player(state_data.get("current_player", Player.P1.value))
+        game.move_count = state_data.get("move_count", 0)
+        game.game_over = state_data.get("game_over", False)
+        game.win_reason = state_data.get("win_reason")
+        
+        winner_val = state_data.get("winner")
+        game.winner = Player(winner_val) if winner_val is not None else None
+
+        game.capture_sequence = state_data.get("capture_sequence", False)
+        capturing_piece_data = state_data.get("capturing_piece")
+        if capturing_piece_data:
+            # Convert list [r, c] back to tuple (r, c)
+            game.capturing_piece = tuple(capturing_piece_data)
+            
+        return game
+
     def render_ascii(self) -> str:
         """Render the current game state as ASCII string"""
         lines = [
