@@ -51,7 +51,7 @@ __pypackages__/
 # Environments
 .env
 .envrc
-.venv
+.venv*
 env.bak/
 venv.bak/
 
@@ -62,3 +62,8 @@ venv.bak/
 
 # PyPI configuration file
 .pypirc
+
+models/
+tensorboard_logs/
+
+.claude

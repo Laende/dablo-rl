@@ -1,0 +1,188 @@
+{
+  "game_config": {
+    "board_rows": 6,
+    "board_cols": 5,
+    "move_limit": 500,
+    "p1_setup": {
+      "3": [
+        [
+          3.0,
+          4.0
+        ]
+      ],
+      "2": [
+        [
+          3.5,
+          3.5
+        ]
+      ],
+      "1": [
+        [
+          5.0,
+          0
+        ],
+        [
+          5.0,
+          1
+        ],
+        [
+          5.0,
+          2
+        ],
+        [
+          5.0,
+          3
+        ],
+        [
+          5.0,
+          4
+        ],
+        [
+          4.5,
+          0.5
+        ],
+        [
+          4.5,
+          1.5
+        ],
+        [
+          4.5,
+          2.5
+        ],
+        [
+          4.5,
+          3.5
+        ],
+        [
+          4.0,
+          0
+        ],
+        [
+          4.0,
+          1
+        ],
+        [
+          4.0,
+          2
+        ],
+        [
+          4.0,
+          3
+        ],
+        [
+          4.0,
+          4
+        ]
+      ]
+    },
+    "p2_setup": {
+      "-3": [
+        [
+          2.0,
+          0.0
+        ]
+      ],
+      "-2": [
+        [
+          1.5,
+          0.5
+        ]
+      ],
+      "-1": [
+        [
+          0.0,
+          0
+        ],
+        [
+          0.0,
+          1
+        ],
+        [
+          0.0,
+          2
+        ],
+        [
+          0.0,
+          3
+        ],
+        [
+          0.0,
+          4
+        ],
+        [
+          0.5,
+          0.5
+        ],
+        [
+          0.5,
+          1.5
+        ],
+        [
+          0.5,
+          2.5
+        ],
+        [
+          0.5,
+          3.5
+        ],
+        [
+          1.0,
+          0
+        ],
+        [
+          1.0,
+          1
+        ],
+        [
+          1.0,
+          2
+        ],
+        [
+          1.0,
+          3
+        ],
+        [
+          1.0,
+          4
+        ]
+      ]
+    },
+    "board_size": [
+      6,
+      5
+    ]
+  },
+  "reward_config": {
+    "material_weight": 1.0,
+    "positional_weight": 0.1,
+    "capture_bonus": 5.0,
+    "win_reward": 100.0,
+    "loss_penalty": -100.0,
+    "draw_reward": 0.0,
+    "step_penalty": -0.01
+  },
+  "training_config": {
+    "total_timesteps": 100000,
+    "learning_rate": 0.0003,
+    "n_steps": 2048,
+    "batch_size": 64,
+    "n_epochs": 10,
+    "n_envs": 4,
+    "policy": "MultiInputPolicy"
+  },
+  "evaluation_config": {
+    "eval_freq": 10000,
+    "n_eval_episodes": 10,
+    "final_eval": true,
+    "final_eval_episodes": 50,
+    "deterministic": true
+  },
+  "checkpoint_config": {
+    "save_freq": 50000,
+    "model_path": "./models",
+    "tensorboard_log": "./tensorboard_logs"
+  },
+  "verbose": 1,
+  "render_eval": false,
+  "seed": null
+}

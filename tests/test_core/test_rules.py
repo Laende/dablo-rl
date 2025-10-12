@@ -23,7 +23,6 @@ class TestMove:
         assert move.capture_pos == (1.5, 1.5)
         assert move.is_capture
 
-
     def test_move_string_representation(self):
         """Test move string conversion"""
         # Regular move
@@ -144,7 +143,7 @@ class TestMoveValidationIntegration:
             assert move.from_pos != move.to_pos
 
             # Forward move validation
-            piece = game.board_state[move.from_pos]
+            _ = game.board_state[move.from_pos]
 
             if not move.is_capture:  # Regular moves should generally be forward
                 # MovementValidator was removed - skip this test
@@ -170,4 +169,3 @@ class TestMoveValidationIntegration:
             # Allow small floating point differences
             assert abs(to_r - expected_to_r) < 0.001
             assert abs(to_c - expected_to_c) < 0.001
-
